@@ -1,0 +1,6 @@
+Database details
+
+Host=18.136.157.135
+user=dm_user_sql
+passsword= 37z49REb$nK@nlpV!vJ
+database_name= datamites_sql
