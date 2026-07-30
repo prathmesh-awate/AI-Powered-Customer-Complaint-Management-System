@@ -1,23 +1,17 @@
 import { useSelector, useDispatch } from "react-redux";
 import { updateField, resetForm } from "../store/slices/formSlice";
-import { resetAI } from "../store/slices/aiSlice";
 
 export default function FormPanel() {
   const dispatch = useDispatch();
   const formData = useSelector((state) => state.form);
   const placeholder = "Awaiting AI extraction...";
 
-  const handleChange = (field, value) => {
-    dispatch(updateField({ field, value }));
-  };
-
-  const handleReset = () => {
-    dispatch(resetForm());
-    dispatch(resetAI());
-  };
+  const handleChange = (field, value) => dispatch(updateField({ field, value }));
+  const handleReset = () => dispatch(resetForm());
 
   return (
     <div className="form-panel">
+      {/* Header */}
       <div className="form-header">
         <div>
           <h1 className="form-title">Log Customer Complaint</h1>
@@ -26,145 +20,82 @@ export default function FormPanel() {
         <span className="status-badge">Pending Triage</span>
       </div>
 
-      {/* SECTION 1 */}
-      <section className="form-section">
-        <h2 className="section-title">
-          <span className="section-number">1.</span> ORIGIN & CUSTOMER DETAILS
-        </h2>
+      {/* Section 1 */}
+      <div className="form-section">
+        <div className="section-title"><span className="section-number">1.</span> Origin & Customer Details</div>
         <div className="form-grid two-col">
           <div className="form-group">
             <label>Complaint Source</label>
-            <input
-              type="text"
-              placeholder={placeholder}
-              value={formData.complaintSource}
-              onChange={(e) => handleChange("complaintSource", e.target.value)}
-            />
+            <input placeholder={placeholder} value={formData.complaintSource} onChange={(e) => handleChange("complaintSource", e.target.value)} />
           </div>
           <div className="form-group">
             <label>Customer Name</label>
-            <input
-              type="text"
-              placeholder={placeholder}
-              value={formData.customerName}
-              onChange={(e) => handleChange("customerName", e.target.value)}
-            />
+            <input placeholder={placeholder} value={formData.customerName} onChange={(e) => handleChange("customerName", e.target.value)} />
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* SECTION 2 */}
-      <section className="form-section">
-        <h2 className="section-title">
-          <span className="section-number">2.</span> PRODUCT & BATCH IDENTIFICATION
-        </h2>
+      {/* Section 2 */}
+      <div className="form-section">
+        <div className="section-title"><span className="section-number">2.</span> Product & Batch Identification</div>
         <div className="form-grid two-col">
           <div className="form-group">
             <label>Product Name</label>
-            <input
-              type="text"
-              placeholder={placeholder}
-              value={formData.productName}
-              onChange={(e) => handleChange("productName", e.target.value)}
-            />
+            <input placeholder={placeholder} value={formData.productName} onChange={(e) => handleChange("productName", e.target.value)} />
           </div>
           <div className="form-group">
             <label>Product Strength/Grade</label>
-            <input
-              type="text"
-              placeholder={placeholder}
-              value={formData.productStrength}
-              onChange={(e) => handleChange("productStrength", e.target.value)}
-            />
+            <input placeholder={placeholder} value={formData.productStrength} onChange={(e) => handleChange("productStrength", e.target.value)} />
           </div>
           <div className="form-group">
             <label>Batch/Lot Number</label>
-            <input
-              type="text"
-              placeholder={placeholder}
-              value={formData.batchLotNumber}
-              onChange={(e) => handleChange("batchLotNumber", e.target.value)}
-            />
+            <input placeholder={placeholder} value={formData.batchLotNumber} onChange={(e) => handleChange("batchLotNumber", e.target.value)} />
           </div>
           <div className="form-group">
             <label>Manufacturing Date</label>
-            <input
-              type="date"
-              value={formData.manufacturingDate}
-              onChange={(e) => handleChange("manufacturingDate", e.target.value)}
-            />
+            <input type="date" value={formData.manufacturingDate} onChange={(e) => handleChange("manufacturingDate", e.target.value)} />
           </div>
           <div className="form-group">
             <label>Expiry Date</label>
-            <input
-              type="date"
-              value={formData.expiryDate}
-              onChange={(e) => handleChange("expiryDate", e.target.value)}
-            />
+            <input type="date" value={formData.expiryDate} onChange={(e) => handleChange("expiryDate", e.target.value)} />
           </div>
           <div className="form-group">
             <label>Quantity Affected</label>
             <div className="input-with-suffix">
-              <input
-                type="text"
-                placeholder={placeholder}
-                value={formData.quantityAffected}
-                onChange={(e) => handleChange("quantityAffected", e.target.value)}
-              />
+              <input placeholder={placeholder} value={formData.quantityAffected} onChange={(e) => handleChange("quantityAffected", e.target.value)} />
               <span className="input-suffix">kg</span>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* SECTION 3 */}
-      <section className="form-section">
-        <h2 className="section-title">
-          <span className="section-number">3.</span> COMPLAINT DETAILS
-        </h2>
+      {/* Section 3 */}
+      <div className="form-section">
+        <div className="section-title"><span className="section-number">3.</span> Complaint Details</div>
         <div className="form-grid two-col">
           <div className="form-group">
             <label>Complaint Type</label>
-            <input
-              type="text"
-              placeholder={placeholder}
-              value={formData.complaintType}
-              onChange={(e) => handleChange("complaintType", e.target.value)}
-            />
+            <input placeholder={placeholder} value={formData.complaintType} onChange={(e) => handleChange("complaintType", e.target.value)} />
           </div>
           <div className="form-group">
             <label>Complaint Date</label>
-            <input
-              type="date"
-              value={formData.complaintDate}
-              onChange={(e) => handleChange("complaintDate", e.target.value)}
-            />
+            <input type="date" value={formData.complaintDate} onChange={(e) => handleChange("complaintDate", e.target.value)} />
+          </div>
+          <div className="form-group full-width">
+            <label>Detailed Complaint Description</label>
+            <textarea rows={4} placeholder={placeholder} value={formData.complaintDescription} onChange={(e) => handleChange("complaintDescription", e.target.value)} />
           </div>
         </div>
-        <div className="form-group full-width" style={{ marginTop: "14px" }}>
-          <label>Detailed Complaint Description</label>
-          <textarea
-            placeholder={placeholder}
-            rows={4}
-            value={formData.complaintDescription}
-            onChange={(e) => handleChange("complaintDescription", e.target.value)}
-          />
-        </div>
-      </section>
+      </div>
 
-      {/* SECTION 4 */}
-      <section className="form-section">
-        <h2 className="section-title">
-          <span className="section-number">4.</span> INITIAL ASSESSMENT & PRIORITY
-        </h2>
+      {/* Section 4 - Initial Assessment */}
+      <div className="form-section">
+        <div className="section-title"><span className="section-number">4.</span> Initial Assessment & Priority</div>
         <div className="form-grid two-col">
           <div className="form-group">
             <label>Initial Severity</label>
-            <select
-              value={formData.initialSeverity}
-              onChange={(e) => handleChange("initialSeverity", e.target.value)}
-            >
-              <option value="" disabled>{placeholder}</option>
+            <select value={formData.initialSeverity} onChange={(e) => handleChange("initialSeverity", e.target.value)}>
+              <option value="">Select severity</option>
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>
@@ -173,28 +104,45 @@ export default function FormPanel() {
           </div>
           <div className="form-group">
             <label>Priority</label>
-            <select
-              value={formData.priority}
-              onChange={(e) => handleChange("priority", e.target.value)}
-            >
-              <option value="" disabled>{placeholder}</option>
-              <option value="p1">P1 - Urgent</option>
+            <select value={formData.priority} onChange={(e) => handleChange("priority", e.target.value)}>
+              <option value="">Select priority</option>
+              <option value="p1">P1 - Immediate</option>
               <option value="p2">P2 - High</option>
-              <option value="p3">P3 - Normal</option>
+              <option value="p3">P3 - Medium</option>
               <option value="p4">P4 - Low</option>
             </select>
           </div>
         </div>
-      </section>
 
-      {/* FORM ACTIONS */}
+        {/* AI Copilot Risk Assessment - auto fills with form */}
+        {(formData.suggestedSeverity || formData.suggestedNextAction || formData.initialRiskAssessment) && (
+          <div className="ai-risk-box">
+            <div className="ai-risk-header">
+              <span className="ai-risk-icon">🛡</span>
+              <h3>AI Copilot Risk Assessment</h3>
+            </div>
+            <div className="form-grid two-col">
+              <div className="form-group">
+                <label className="ai-risk-label">Severity (Suggested)</label>
+                <input readOnly value={formData.suggestedSeverity} className="ai-risk-input" />
+              </div>
+              <div className="form-group">
+                <label className="ai-risk-label">Suggested Next Action</label>
+                <input readOnly value={formData.suggestedNextAction} className="ai-risk-input ai-risk-action" />
+              </div>
+              <div className="form-group full-width">
+                <label className="ai-risk-label">Initial Risk Assessment</label>
+                <textarea readOnly rows={3} value={formData.initialRiskAssessment} className="ai-risk-input" />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Form Actions */}
       <div className="form-actions">
-        <button className="btn-reset" onClick={handleReset}>
-          <span className="btn-icon">↺</span> Reset Form
-        </button>
-        <button className="btn-save">
-          <span className="btn-icon">💾</span> Save Complaint
-        </button>
+        <button className="btn-reset" onClick={handleReset}>↺ Reset Form</button>
+        <button className="btn-save">💾 Save Complaint</button>
       </div>
     </div>
   );

@@ -582,3 +582,43 @@ html, body {
     grid-template-columns: 1fr;
   }
 }
+/* ...existing code... */
+
+.ai-risk-box {
+  margin-top: 16px;
+  background: #f5f3ff;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #ede9fe;
+}
+
+.ai-risk-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.ai-risk-header h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #5b21b6;
+}
+
+.ai-risk-label {
+  color: #7c3aed !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+.ai-risk-input {
+  background: #fff !important;
+  border: 1.5px solid #ede9fe !important;
+  color: #1f2937 !important;
+  cursor: default;
+}
+
+.ai-risk-action {
+  color: #7c3aed !important;
+  font-weight: 600 !important;
+}

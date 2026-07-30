@@ -14,6 +14,9 @@ const initialState = {
   complaintDescription: "",
   initialSeverity: "",
   priority: "",
+  suggestedSeverity: "",
+  suggestedNextAction: "",
+  initialRiskAssessment: "",
 };
 
 const formSlice = createSlice({
@@ -42,6 +45,9 @@ const formSlice = createSlice({
         complaintDescription: data.complaintDescription || state.complaintDescription,
         initialSeverity:      data.initialSeverity      || state.initialSeverity,
         priority:             data.priority             || state.priority,
+        suggestedSeverity:    data.suggestedSeverity    || state.suggestedSeverity,
+        suggestedNextAction:  data.suggestedNextAction  || state.suggestedNextAction,
+        initialRiskAssessment: data.initialRiskAssessment || state.initialRiskAssessment,
       };
     },
   },
