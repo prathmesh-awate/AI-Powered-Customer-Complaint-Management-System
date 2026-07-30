@@ -1,12 +1,20 @@
 from fastapi import APIRouter
-from app.schemas.chat import ChatRequest, ChatResponse
+from pydantic import BaseModel
+
+from app.services.groq_service import groq_service
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
 
-@router.post("/", response_model=ChatResponse)
+class ChatRequest(BaseModel):
+    message: str
+
+
+@router.post("/")
 async def chat(request: ChatRequest):
 
-    return ChatResponse(
-        response=f"You said: {request.message}"
-    )
+    answer = groq_service.chat(request.message)
+
+    return {
+        "response": answer
+    }
