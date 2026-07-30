@@ -1,13 +1,29 @@
 import { useSelector, useDispatch } from "react-redux";
 import { updateField, resetForm } from "../store/slices/formSlice";
+import { saveComplaint } from "../services/complaintService";
+import { useState } from "react";
 
 export default function FormPanel() {
   const dispatch = useDispatch();
   const formData = useSelector((state) => state.form);
   const placeholder = "Awaiting AI extraction...";
-
+  const [saving, setSaving] = useState(false);
+  const [savedId, setSavedId] = useState(null);
   const handleChange = (field, value) => dispatch(updateField({ field, value }));
   const handleReset = () => dispatch(resetForm());
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const result = await saveComplaint(formData);
+      setSavedId(result.id);
+      alert(`✅ Complaint saved! ID: ${result.id}`);
+    } catch (err) {
+      alert("❌ Failed to save complaint. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="form-panel">
@@ -142,7 +158,9 @@ export default function FormPanel() {
       {/* Form Actions */}
       <div className="form-actions">
         <button className="btn-reset" onClick={handleReset}>↺ Reset Form</button>
-        <button className="btn-save">💾 Save Complaint</button>
+        <button className="btn-save" onClick={handleSave} disabled={saving}>
+          {saving ? "⏳ Saving..." : "💾 Save Complaint"}
+        </button>
       </div>
     </div>
   );
