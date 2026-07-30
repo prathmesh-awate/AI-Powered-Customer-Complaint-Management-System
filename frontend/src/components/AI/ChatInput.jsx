@@ -1,5 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
-import { setChatMessage, addChatMessage, addChatMessage as setLoading } from "../../store/slices/aiSlice";
+import { setChatMessage, addChatMessage } from "../../store/slices/aiSlice";
+import { populateForm } from "../../store/slices/formSlice";
 import { sendMessage } from "../../services/chatService";
 
 export default function ChatInput() {
@@ -14,9 +15,21 @@ export default function ChatInput() {
 
     try {
       const data = await sendMessage(userMsg);
-      dispatch(addChatMessage({ role: "ai", text: data.response || data.message }));
+      console.log("Chat response:", data);
+
+      // Auto-fill the form
+      dispatch(populateForm(data));
+
+      dispatch(addChatMessage({
+        role: "ai",
+        text: data.message || "I've extracted the details and populated the form for you.",
+      }));
     } catch (error) {
-      dispatch(addChatMessage({ role: "ai", text: "Sorry, I couldn't process your request. Please try again." }));
+      console.error("Error:", error);
+      dispatch(addChatMessage({
+        role: "ai",
+        text: "Sorry, I couldn't process your request. Please try again.",
+      }));
     }
   };
 

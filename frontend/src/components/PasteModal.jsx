@@ -1,5 +1,7 @@
 import { useSelector, useDispatch } from "react-redux";
-import { setPasteText, setShowPasteModal } from "../store/slices/aiSlice";
+import { setPasteText, setShowPasteModal, addChatMessage } from "../store/slices/aiSlice";
+import { populateForm } from "../store/slices/formSlice";
+import { sendMessage } from "../services/chatService";
 
 export default function PasteModal() {
   const dispatch = useDispatch();
@@ -7,9 +9,28 @@ export default function PasteModal() {
 
   const handleClose = () => dispatch(setShowPasteModal(false));
 
-  const handleExtract = () => {
-    // AI extraction logic will go here
-    dispatch(setShowPasteModal(false));
+  const handleExtract = async () => {
+    if (!pasteText.trim()) return;
+    try {
+      const data = await sendMessage(pasteText);
+      console.log("API Response:", data); // check this in browser console
+
+      dispatch(populateForm(data));
+      console.log("populateForm dispatched with:", data); // confirm dispatch
+
+      dispatch(addChatMessage({
+        role: "ai",
+        text: data.message || "Text processed. Form has been auto-filled.",
+      }));
+      dispatch(setShowPasteModal(false));
+    } catch (error) {
+      console.error("Error:", error);
+      dispatch(addChatMessage({
+        role: "ai",
+        text: "Failed to process text. Please try again.",
+      }));
+      dispatch(setShowPasteModal(false));
+    }
   };
 
   return (

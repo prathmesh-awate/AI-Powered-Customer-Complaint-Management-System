@@ -6,8 +6,9 @@ import {
   setShowPasteModal,
   setIsExtracting,
   setExtractionProgress,
+  addChatMessage,
 } from "../../store/slices/aiSlice";
-import { addChatMessage } from "../../store/slices/aiSlice";
+import { populateForm } from "../../store/slices/formSlice";
 import { uploadDocument } from "../../services/uploadService";
 
 export default function UploadArea() {
@@ -22,13 +23,25 @@ export default function UploadArea() {
     dispatch(setExtractionProgress(10));
 
     try {
+      dispatch(setExtractionProgress(40));
       const data = await uploadDocument(file);
       dispatch(setExtractionProgress(100));
       dispatch(setIsExtracting(false));
-      dispatch(addChatMessage({ role: "ai", text: data.response || data.message }));
+
+      // Auto-fill the form
+      dispatch(populateForm(data));
+
+      dispatch(addChatMessage({
+        role: "ai",
+        text: data.message || "Document processed. Form has been auto-filled with extracted details.",
+      }));
     } catch (error) {
       dispatch(setIsExtracting(false));
-      dispatch(addChatMessage({ role: "ai", text: "Failed to process document. Please try again." }));
+      dispatch(setExtractionProgress(0));
+      dispatch(addChatMessage({
+        role: "ai",
+        text: "Failed to process document. Please try again.",
+      }));
     }
   };
 

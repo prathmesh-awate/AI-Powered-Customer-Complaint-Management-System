@@ -26,7 +26,23 @@ const formSlice = createSlice({
     },
     resetForm: () => initialState,
     populateForm: (state, action) => {
-      return { ...state, ...action.payload };
+      const data = action.payload;
+      return {
+        ...state,
+        complaintSource:      data.complaintSource      || state.complaintSource,
+        customerName:         data.customerName         || state.customerName,
+        productName:          data.productName          || state.productName,
+        productStrength:      data.productStrength      || state.productStrength,
+        batchLotNumber:       data.batchLotNumber       || state.batchLotNumber,
+        manufacturingDate:    data.manufacturingDate    || state.manufacturingDate,
+        expiryDate:           data.expiryDate           || state.expiryDate,
+        quantityAffected:     data.quantityAffected     || state.quantityAffected,
+        complaintType:        data.complaintType        || state.complaintType,
+        complaintDate:        data.complaintDate        || state.complaintDate,
+        complaintDescription: data.complaintDescription || state.complaintDescription,
+        initialSeverity:      data.initialSeverity      || state.initialSeverity,
+        priority:             data.priority             || state.priority,
+      };
     },
   },
 });
