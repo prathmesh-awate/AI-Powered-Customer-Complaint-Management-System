@@ -1,29 +1,47 @@
 import { useSelector, useDispatch } from "react-redux";
 import { updateField, resetForm } from "../store/slices/formSlice";
+import { resetRisk } from "../store/slices/riskSlice";
 import { saveComplaint } from "../services/complaintService";
 import { useState } from "react";
 
 export default function FormPanel() {
   const dispatch = useDispatch();
   const formData = useSelector((state) => state.form);
+  const { riskData, assignedDepartment, escalated, routingReason, similarComplaints } = useSelector((state) => state.risk);
   const placeholder = "Awaiting AI extraction...";
   const [saving, setSaving] = useState(false);
-  const [savedId, setSavedId] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
+
+  // form is filled if at least product name and complaint description exist
+  const isFormFilled = formData.productName && formData.complaintDescription;
+  const getStatus = () => {
+    if (submitted) return { label: "Submitted", className: "status-badge submitted" };
+    if (isFormFilled) return { label: "Ready to Submit", className: "status-badge ready" };
+    return { label: "Pending Triage", className: "status-badge pending" };
+  };
+
   const handleChange = (field, value) => dispatch(updateField({ field, value }));
-  const handleReset = () => dispatch(resetForm());
 
   const handleSave = async () => {
     setSaving(true);
     try {
       const result = await saveComplaint(formData);
-      setSavedId(result.id);
-      alert(`✅ Complaint saved! ID: ${result.id}`);
+      setSubmitted(true);
+      alert(`Complaint saved! ID: ${result.id}`);
     } catch (err) {
-      alert("❌ Failed to save complaint. Please try again.");
+      alert("Failed to save complaint.");
     } finally {
       setSaving(false);
     }
   };
+  const handleReset = () => {
+    dispatch(resetForm());
+    dispatch(resetRisk());
+    setSubmitted(false);
+  };
+
+  const status = getStatus();
+
 
   return (
     <div className="form-panel">
@@ -33,7 +51,7 @@ export default function FormPanel() {
           <h1 className="form-title">Log Customer Complaint</h1>
           <p className="form-subtitle">API & FDF Quality Assurance Module</p>
         </div>
-        <span className="status-badge">Pending Triage</span>
+        <span className={status.className}>{status.label}</span>
       </div>
 
       {/* Section 1 */}
@@ -130,26 +148,49 @@ export default function FormPanel() {
           </div>
         </div>
 
-        {/* AI Copilot Risk Assessment - auto fills with form */}
-        {(formData.suggestedSeverity || formData.suggestedNextAction || formData.initialRiskAssessment) && (
+        {/* AI Risk Box — only shows after agent pipeline runs */}
+        {riskData && (
           <div className="ai-risk-box">
             <div className="ai-risk-header">
-              <span className="ai-risk-icon">🛡</span>
+              <span>🛡</span>
               <h3>AI Copilot Risk Assessment</h3>
+              {escalated && <span className="ai-risk-escalated">⚠️ ESCALATED</span>}
             </div>
             <div className="form-grid two-col">
               <div className="form-group">
                 <label className="ai-risk-label">Severity (Suggested)</label>
-                <input readOnly value={formData.suggestedSeverity} className="ai-risk-input" />
+                <input readOnly value={riskData.severityLevel || ""} className="ai-risk-input" />
               </div>
               <div className="form-group">
-                <label className="ai-risk-label">Suggested Next Action</label>
-                <input readOnly value={formData.suggestedNextAction} className="ai-risk-input ai-risk-action" />
+                <label className="ai-risk-label">Risk Score</label>
+                <input readOnly value={`${riskData.overallRiskScore || ""} / 100`} className="ai-risk-input" />
+              </div>
+              <div className="form-group">
+                <label className="ai-risk-label">Patient Safety Risk</label>
+                <input readOnly value={riskData.patientSafetyRisk || ""} className="ai-risk-input" />
+              </div>
+              <div className="form-group">
+                <label className="ai-risk-label">Assigned Department</label>
+                <input readOnly value={assignedDepartment || ""} className="ai-risk-input" />
+              </div>
+              <div className="form-group">
+                <label className="ai-risk-label">Recall Probability</label>
+                <input readOnly value={riskData.recallProbability || ""} className="ai-risk-input" />
+              </div>
+              <div className="form-group">
+                <label className="ai-risk-label">Regulatory Reporting</label>
+                <input readOnly value={riskData.needsRegulatoryReporting ? "Required" : "Not Required"} className="ai-risk-input" />
               </div>
               <div className="form-group full-width">
-                <label className="ai-risk-label">Initial Risk Assessment</label>
-                <textarea readOnly rows={3} value={formData.initialRiskAssessment} className="ai-risk-input" />
+                <label className="ai-risk-label">Risk Summary</label>
+                <textarea readOnly rows={3} value={riskData.riskSummary || ""} className="ai-risk-input" />
               </div>
+              {routingReason && (
+                <div className="form-group full-width">
+                  <label className="ai-risk-label">Routing Reason</label>
+                  <textarea readOnly rows={2} value={routingReason} className="ai-risk-input" />
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -159,7 +200,7 @@ export default function FormPanel() {
       <div className="form-actions">
         <button className="btn-reset" onClick={handleReset}>↺ Reset Form</button>
         <button className="btn-save" onClick={handleSave} disabled={saving}>
-          {saving ? "⏳ Saving..." : "💾 Save Complaint"}
+          {saving ? "Saving..." : " Save Complaint"}
         </button>
       </div>
     </div>

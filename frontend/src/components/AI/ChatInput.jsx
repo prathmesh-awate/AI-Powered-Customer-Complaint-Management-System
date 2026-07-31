@@ -1,7 +1,7 @@
 import { useSelector, useDispatch } from "react-redux";
 import { setChatMessage, addChatMessage } from "../../store/slices/aiSlice";
 import { populateForm } from "../../store/slices/formSlice";
-import { sendMessage } from "../../services/chatService";
+import { setAgentResults } from "../../store/slices/riskSlice";
 
 export default function ChatInput() {
   const dispatch = useDispatch();
@@ -11,21 +11,33 @@ export default function ChatInput() {
     if (!chatMessage.trim()) return;
 
     const userMsg = chatMessage;
+    dispatch(setChatMessage(""));
     dispatch(addChatMessage({ role: "user", text: userMsg }));
 
     try {
-      const data = await sendMessage(userMsg);
-      console.log("Chat response:", data);
+      const response = await fetch("http://localhost:8000/agent/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: userMsg }),
+      });
 
-      // Auto-fill the form
-      dispatch(populateForm(data));
+      if (!response.ok) throw new Error(await response.text());
+
+      const result = await response.json();
+
+      // fill form fields
+      if (result.complaintFields) dispatch(populateForm(result.complaintFields));
+
+      // fill risk panel
+      dispatch(setAgentResults(result));
 
       dispatch(addChatMessage({
         role: "ai",
-        text: data.message || "I've extracted the details and populated the form for you.",
+        text: ` Done! Form and risk assessment have been filled.`,
       }));
+
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Agent error:", error);
       dispatch(addChatMessage({
         role: "ai",
         text: "Sorry, I couldn't process your request. Please try again.",

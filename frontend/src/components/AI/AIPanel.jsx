@@ -1,7 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
 import { setShowPasteModal } from "../../store/slices/aiSlice";
 import UploadArea from "./UploadArea";
-import ProgressBar from "./ProgressBar";
 import ChatWindow from "./ChatWindow";
 import ChatInput from "./ChatInput";
 import PasteModal from "../PasteModal";
@@ -21,7 +20,6 @@ export default function AIPanel() {
       </div>
 
       <UploadArea />
-      <ProgressBar />
       <ChatWindow />
       <ChatInput />
 

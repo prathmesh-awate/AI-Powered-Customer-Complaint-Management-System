@@ -622,3 +622,92 @@ html, body {
   color: #7c3aed !important;
   font-weight: 600 !important;
 }
+
+/* ...existing code... */
+
+.upload-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upload-area {
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: #f8fafc;
+}
+
+.upload-area:hover,
+.upload-area.dragging {
+  border-color: #6366f1;
+  background: #eef2ff;
+}
+
+.upload-area.has-file {
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+
+.upload-icon { font-size: 24px; }
+.upload-text { font-size: 13px; color: #475569; }
+.upload-filename { font-size: 13px; font-weight: 600; color: #1e293b; }
+.upload-sub { font-size: 11px; color: #94a3b8; }
+
+.extraction-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.extraction-progress-bar {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.extraction-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.extraction-progress-text {
+  font-size: 11px;
+  color: #6366f1;
+  font-weight: 500;
+  text-align: center;
+}
+
+.status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.pending {
+  background: #fef9c3;
+  color: #a16207;
+}
+
+.status-badge.ready {
+  background: #23830c;
+  color: #f4f4f4;
+}
+
+.status-badge.submitted {
+  background: #dcfce7;
+  color: #15803d;
+}

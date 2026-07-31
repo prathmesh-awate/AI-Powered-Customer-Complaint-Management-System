@@ -2,33 +2,31 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   riskData: null,
-  isAssessing: false,
-  error: null,
+  assignedDepartment: null,
+  escalated: false,
+  routingReason: null,
+  similarComplaints: [],
+  rootCauseHypothesis: null,
+  investigationChecklist: [],
 };
 
 const riskSlice = createSlice({
   name: "risk",
   initialState,
   reducers: {
-    setRiskData: (state, action) => {
-      state.riskData = action.payload;
-      state.isAssessing = false;
-      state.error = null;
+    setAgentResults: (state, action) => {
+      const data = action.payload;
+      state.riskData             = data.riskAssessment        || null;
+      state.assignedDepartment   = data.assignedDepartment    || null;
+      state.escalated            = data.escalated             || false;
+      state.routingReason        = data.routingReason         || null;
+      state.similarComplaints    = data.similarComplaints     || [];
+      state.rootCauseHypothesis  = data.rootCauseHypothesis   || null;
+      state.investigationChecklist = data.investigationChecklist || [];
     },
-    setIsAssessing: (state, action) => {
-      state.isAssessing = action.payload;
-    },
-    setError: (state, action) => {
-      state.error = action.payload;
-      state.isAssessing = false;
-    },
-    resetRisk: (state) => {
-      state.riskData = null;
-      state.isAssessing = false;
-      state.error = null;
-    },
+    resetRisk: () => initialState,
   },
 });
 
-export const { setRiskData, setIsAssessing, setError, resetRisk } = riskSlice.actions;
+export const { setAgentResults, resetRisk } = riskSlice.actions;
 export default riskSlice.reducer;

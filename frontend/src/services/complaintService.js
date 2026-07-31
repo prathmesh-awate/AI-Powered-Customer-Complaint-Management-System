@@ -22,6 +22,21 @@ export async function saveComplaint(formData) {
   return response.json();
 }
 
+export async function processWithAgents(text) {
+  const response = await fetch(`${API_URL}/agent/process`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error("Agent error:", error);
+    throw new Error(error);
+  }
+
+  return response.json();
+}
 export async function getAllComplaints() {
   const response = await fetch(`${API_URL}/complaints/`);
   if (!response.ok) throw new Error("Failed to fetch complaints");

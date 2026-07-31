@@ -1,20 +1,13 @@
 import { useRef } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import {
-  setIsDragging,
-  setUploadedFileName,
-  setShowPasteModal,
-  setIsExtracting,
-  setExtractionProgress,
-  addChatMessage,
-} from "../../store/slices/aiSlice";
+import { useDispatch, useSelector } from "react-redux";
 import { populateForm } from "../../store/slices/formSlice";
-import { uploadDocument } from "../../services/uploadService";
+import { setAgentResults } from "../../store/slices/riskSlice";
+import { setIsDragging, setUploadedFileName, setIsExtracting, setExtractionProgress } from "../../store/slices/aiSlice";
 
 export default function UploadArea() {
   const dispatch = useDispatch();
   const fileInputRef = useRef(null);
-  const { isDragging, uploadedFileName } = useSelector((state) => state.ai);
+  const { isDragging, uploadedFileName, isExtracting, extractionProgress } = useSelector((state) => state.ai);
 
   const handleUpload = async (file) => {
     if (!file) return;
@@ -23,89 +16,76 @@ export default function UploadArea() {
     dispatch(setExtractionProgress(10));
 
     try {
+      const formData = new FormData();
+      formData.append("file", file);
       dispatch(setExtractionProgress(40));
-      const data = await uploadDocument(file);
+
+      const response = await fetch("http://localhost:8000/upload/", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error(await response.text());
+
+      const result = await response.json();
       dispatch(setExtractionProgress(100));
       dispatch(setIsExtracting(false));
 
-      // Auto-fill the form
-      dispatch(populateForm(data));
+      if (result.complaintFields) dispatch(populateForm(result.complaintFields));
+      dispatch(setAgentResults(result));
 
-      dispatch(addChatMessage({
-        role: "ai",
-        text: data.message || "Document processed. Form has been auto-filled with extracted details.",
-      }));
     } catch (error) {
       dispatch(setIsExtracting(false));
       dispatch(setExtractionProgress(0));
-      dispatch(addChatMessage({
-        role: "ai",
-        text: "Failed to process document. Please try again.",
-      }));
+      console.error("Upload failed:", error.message);
     }
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    dispatch(setIsDragging(true));
-  };
-
+  const handleDragOver = (e) => { e.preventDefault(); dispatch(setIsDragging(true)); };
   const handleDragLeave = () => dispatch(setIsDragging(false));
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    dispatch(setIsDragging(false));
-    const file = e.dataTransfer.files[0];
-    if (file) handleUpload(file);
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) handleUpload(file);
-  };
+  const handleDrop = (e) => { e.preventDefault(); dispatch(setIsDragging(false)); handleUpload(e.dataTransfer.files[0]); };
+  const handleFileChange = (e) => handleUpload(e.target.files[0]);
 
   return (
-    <>
+    <div className="upload-wrapper">
+      {/* Drop Zone */}
       <div
-        className={`drop-zone ${isDragging ? "dragging" : ""}`}
+        className={`upload-area ${isDragging ? "dragging" : ""} ${uploadedFileName ? "has-file" : ""}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={() => fileInputRef.current.click()}
+        onClick={() => fileInputRef.current?.click()}
       >
-        <div className="drop-zone-icon">☁</div>
+        <input type="file" ref={fileInputRef} accept=".pdf,.docx,.txt,.eml" onChange={handleFileChange} hidden />
         {uploadedFileName ? (
-          <p>📎 <strong>{uploadedFileName}</strong></p>
+          <>
+            <span className="upload-icon">✅</span>
+            <span className="upload-filename">{uploadedFileName}</span>
+            <span className="upload-sub">Click to replace</span>
+          </>
         ) : (
-          <p>
-            Drag & drop complaint document here
-            <br />
-            or <span className="link">click to browse</span>
-          </p>
+          <>
+            <span className="upload-icon">📄</span>
+            <span className="upload-text">Drop file or <strong>click to upload</strong></span>
+            <span className="upload-sub">PDF, DOCX, TXT, EML</span>
+          </>
         )}
-        <input
-          type="file"
-          ref={fileInputRef}
-          hidden
-          accept=".pdf,.docx,.txt,.eml"
-          onChange={handleFileChange}
-        />
       </div>
 
-      <div className="divider-or">OR</div>
-
-      <button className="btn-paste" onClick={() => dispatch(setShowPasteModal(true))}>
-        <span>📄</span> Paste Complaint Text / Email
-      </button>
-
-      <div className="supported-formats">
-        <span className="formats-icon">✓</span>
-        <span>
-          Supported formats: PDF, DOCX, TXT, EML
-          <br />
-          Max file size: 10MB
-        </span>
-      </div>
-    </>
+      {/* Progress Bar — only shows while processing */}
+      {isExtracting && (
+        <div className="extraction-progress">
+          <div className="extraction-progress-bar">
+            <div
+              className="extraction-progress-fill"
+              style={{ width: `${extractionProgress}%` }}
+            />
+          </div>
+          <span className="extraction-progress-text">
+            {extractionProgress < 40 ? " Reading file..." : extractionProgress < 100 ? " Extracting..." : "✅ Done!"}
+          </span>
+        </div>
+      )}
+    </div>
   );
 }

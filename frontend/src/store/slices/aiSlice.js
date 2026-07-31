@@ -1,8 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  extractionProgress: 10,
-  isExtracting: true,
+  extractionProgress: 0,
+  isExtracting: false,
   chatMessage: "",
   chatHistory: [],
   showPasteModal: false,
