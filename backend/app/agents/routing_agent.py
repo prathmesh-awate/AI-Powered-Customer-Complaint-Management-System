@@ -1,63 +1,76 @@
 import json
 import os
+import re
 from langchain_groq import ChatGroq
-from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.messages import HumanMessage
+from langgraph.prebuilt import create_react_agent
 from app.graph.state import ComplaintState
+from app.tools.complaint_tools import get_department_routing
 from dotenv import load_dotenv
 
 load_dotenv()
 
 llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.1, api_key=os.getenv("GROQ_API_KEY"))
 
-ROUTING_PROMPT = """
-You are a pharmaceutical complaint routing specialist.
-Based on the complaint and risk assessment, decide routing.
-Return ONLY a JSON object with:
+ROUTING_SYSTEM = """You are a pharmaceutical complaint routing specialist.
 
+Steps:
+1. Use get_department_routing tool with complaint type, severity and regulatory requirements
+2. Provide final routing decision with full justification
+
+Your FINAL response must be ONLY a valid JSON object:
 {
-  "assignedDepartment": "QA / Regulatory Affairs / Manufacturing / Medical Affairs / Senior Management",
+  "assignedDepartment": "",
   "escalated": true or false,
-  "escalationReason": "why escalated or empty string",
-  "routingReason": "why routed to this department",
+  "escalationReason": "",
+  "routingReason": "",
   "urgency": "Immediate / 24hrs / 7days / 30days",
-  "notifyStakeholders": ["QA Manager", "Regulatory Affairs"]
+  "notifyStakeholders": []
 }
-
-Rules:
-- Critical severity → escalated = true, notify Senior Management
-- Regulatory reporting needed → assign Regulatory Affairs
-- Manufacturing defect → assign Manufacturing
-- Return ONLY valid JSON, no markdown.
+No markdown. Only JSON.
 """
+
+routing_react_agent = create_react_agent(llm, [get_department_routing], prompt=ROUTING_SYSTEM)
+
+
+def extract_json(text: str) -> dict:
+    try:
+        return json.loads(text)
+    except Exception:
+        match = re.search(r'\{.*\}', text, re.DOTALL)
+        if match:
+            return json.loads(match.group())
+        return {}
+
 
 def routing_agent(state: ComplaintState) -> ComplaintState:
     print("Routing Agent running...")
 
     fields = state["complaint_fields"]
-    risk = state["risk_assessment"]
+    risk = state.get("risk_assessment", {})
 
     context = f"""
     Complaint Type: {fields.get('complaintType')}
     Severity: {risk.get('severityLevel')}
     Risk Score: {risk.get('overallRiskScore')}
-    Regulatory Reporting Needed: {risk.get('needsRegulatoryReporting')}
-    Recommended Actions: {json.dumps(risk.get('recommendedActions', []))}
+    Needs Regulatory Reporting: {risk.get('needsRegulatoryReporting')}
+    Patient Safety Risk: {risk.get('patientSafetyRisk')}
+    Recall Probability: {risk.get('recallProbability')}
     """
 
-    response = llm.invoke([
-        SystemMessage(content=ROUTING_PROMPT),
-        HumanMessage(content=f"Route this complaint:\n{context}")
-    ])
+    result = routing_react_agent.invoke({
+        "messages": [HumanMessage(content=f"Route this complaint:\n{context}")]
+    })
 
-    raw = response.content.strip()
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
+    last_message = result["messages"][-1].content
 
-    routing = json.loads(raw)
-
-    print(f"Routing complete. Department: {routing.get('assignedDepartment')}, Escalated: {routing.get('escalated')}")
+    try:
+        routing = extract_json(last_message)
+    except Exception:
+        routing = {}
+    escalated_str = "YES" if routing.get("escalated") else "NO"
+    print(f"  → Department: {routing.get('assignedDepartment')}, Escalated: {escalated_str}")
+    print(f"  → Routing complete\n")
 
     return {
         **state,
